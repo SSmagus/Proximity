@@ -12,6 +12,11 @@ import java.time.Instant;
 import java.util.List;
 
 @Entity(name = "users")
+@Table(
+        indexes = {
+                @Index(name = "idx_auth_user", columnList = "auth_user_id")
+        }
+)
 @Data
 @AllArgsConstructor
 @RequiredArgsConstructor
