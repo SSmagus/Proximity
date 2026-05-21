@@ -4,11 +4,13 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
 
 @Component
+@RequestMapping
 public class JwtUtil {
 
     private final SecretKey key;
