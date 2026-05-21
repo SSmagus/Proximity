@@ -13,7 +13,6 @@ public class RedisConfig {
     public RedisTemplate<String, String> redisTemplate(
             RedisConnectionFactory connectionFactory
     ) {
-
         RedisTemplate<String, String> template =
                 new RedisTemplate<>();
 

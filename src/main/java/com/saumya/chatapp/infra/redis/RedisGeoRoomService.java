@@ -1,7 +1,10 @@
 package com.saumya.chatapp.infra.redis;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.geo.*;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.GeoResults;
+import org.springframework.data.geo.Metrics;
+import org.springframework.data.geo.Point;
 import org.springframework.data.redis.connection.RedisGeoCommands;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.domain.geo.GeoReference;
@@ -11,42 +14,39 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class RedisGeoEventService {
-
+public class RedisGeoRoomService {
     private final RedisTemplate<String, String> redisTemplate;
 
-    private static final String EVENT_KEY = "event";
-    private static final double DEFAULT_RADIUS_KM = 50.0;
+    private static final String ROOM_KEY = "room";
+    private static final double DEFAULT_RADIUS_KM = 20.0;
 
-    public void addEvent(
-            Long eventId,
+    public void addRoom(
+            String roomId,
             double longitude,
             double latitude
-    ) {
-
+    ){
         redisTemplate.opsForGeo().add(
-                EVENT_KEY,
+                ROOM_KEY,
                 new Point(longitude, latitude),
-                eventId.toString()
+                roomId
         );
     }
 
-    public void removeEvent(Long eventId){
+    public void removeRoom(String roomId){
         redisTemplate.opsForGeo().remove(
-                EVENT_KEY,
-                eventId.toString()
+                ROOM_KEY,
+                roomId
         );
     }
 
-    public List<Long> getNearbyEventIds(
+    public List<String> getNearbyRoomIds(
             double longitude,
             double latitude
-    ) {
-
-        GeoResults<RedisGeoCommands.GeoLocation<String>> results =
+    ){
+        GeoResults<RedisGeoCommands.GeoLocation<String>> results=
                 redisTemplate.opsForGeo()
                         .search(
-                                EVENT_KEY,
+                                ROOM_KEY,
                                 GeoReference.fromCoordinate(
                                         longitude,
                                         latitude
@@ -62,11 +62,11 @@ public class RedisGeoEventService {
                                         .limit(100)
                         );
 
-        if(results == null) return List.of();
+        if(results==null) return List.of();
 
         return results.getContent()
                 .stream()
-                .map(x -> Long.parseLong(
+                .map(x->(
                         x.getContent().getName()
                 ))
                 .toList();
