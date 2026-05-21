@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
+import java.time.Instant;
+
 @Data
 @AllArgsConstructor
 @RequiredArgsConstructor
@@ -14,4 +16,6 @@ public class EventRequestDto {
     private String description;
     private Double latitude;
     private Double longitude;
+    private Instant startDate;
+    private Instant closeDate;
 }

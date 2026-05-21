@@ -1,10 +1,13 @@
 package com.saumya.chatapp.event.service;
 
+import com.saumya.chatapp.auth.enums.EventStatus;
 import com.saumya.chatapp.event.dto.EventRequestDto;
 import com.saumya.chatapp.event.dto.EventResponseDto;
 import com.saumya.chatapp.event.entity.Event;
 import com.saumya.chatapp.event.repository.EventRepository;
 import com.saumya.chatapp.infra.redis.RedisGeoEventService;
+import com.saumya.chatapp.rooms.entity.Room;
+import com.saumya.chatapp.rooms.service.RoomService;
 import com.saumya.chatapp.user.entity.User;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,7 +21,7 @@ import java.util.Optional;
 public class EventService {
     private final EventRepository eventRepository;
     private final RedisGeoEventService redisGeoEventService;
-
+    private final RoomService roomService;
 
     @Transactional
     public EventResponseDto createEvent(EventRequestDto eventRequestDto, User user) {
@@ -28,8 +31,13 @@ public class EventService {
                 .creator(user)
                 .latitude(eventRequestDto.getLatitude())
                 .longitude(eventRequestDto.getLongitude())
+                .startDate(eventRequestDto.getStartDate())
+                .closeDate(eventRequestDto.getCloseDate())
                 .build();
-        eventRepository.save(event);
+        event = eventRepository.save(event);
+        Room room= roomService.createEventRoom(event);
+        event.setRoomId(room.getId());
+        event = eventRepository.save(event);
         redisGeoEventService.addEvent(event.getId(),
                 event.getLongitude(),
                 event.getLatitude());
@@ -70,11 +78,15 @@ public class EventService {
     }
 
     @Transactional
-    public void deleteEventById(User user, Long eventId){
+    public void closeEventById(User user, Long eventId){
         Optional<Event> event= eventRepository.findById(eventId);
         if(event.isEmpty()) throw new RuntimeException("Event doesn't exist, can't delete");
+        if(event.get().getEventStatus().equals(EventStatus.CLOSED)) throw new RuntimeException("Event already closed");
         if(!event.get().getCreator().getId().equals(user.getId())) throw new RuntimeException("User is not authorized to delete this event");
-        eventRepository.deleteById(eventId);
+
+        event.get().setEventStatus(EventStatus.CLOSED);
+        eventRepository.save(event.get());
+        roomService.closeRoom(event.get().getRoomId(), user);
         redisGeoEventService.removeEvent(eventId);
     }
 }

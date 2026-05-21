@@ -14,7 +14,7 @@ import java.util.List;
 
 
 @RestController
-@RequestMapping("api/v1/user/events")
+@RequestMapping("api/v1/event")
 @AllArgsConstructor
 public class EventController {
     private final EventService eventService;
@@ -58,11 +58,11 @@ public class EventController {
 
     @DeleteMapping("/{eventId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteEventById(
+    public void closeEventById(
             @PathVariable Long eventId,
             @AuthenticationPrincipal CustomUserDetails customUserDetails
     ){
-        eventService.deleteEventById(customUserDetails.getUser() ,eventId);
+        eventService.closeEventById(customUserDetails.getUser() ,eventId);
 
     }
 }
